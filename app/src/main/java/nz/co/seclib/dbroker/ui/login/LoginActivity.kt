@@ -17,13 +17,18 @@ import androidx.lifecycle.Observer
 import kotlinx.android.synthetic.main.activity_login.*
 import nz.co.seclib.dbroker.R
 import nz.co.seclib.dbroker.ui.stockinfo.SearchActivity
-import nz.co.seclib.dbroker.ui.stockinfo.SelectedStocksActivity
+import nz.co.seclib.dbroker.ui.stockinfo.DBSelectedStocksActivity
+import nz.co.seclib.dbroker.ui.stockinfo.NZXSelectedStocksActivity
+import nz.co.seclib.dbroker.ui.sysinfo.SystemConfigActivity
+import nz.co.seclib.dbroker.ui.userinfo.UserInfoManagerActivity
 import nz.co.seclib.dbroker.viewmodel.LoginViewModel
 import nz.co.seclib.dbroker.viewmodel.LoginViewModelFactory
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var loginViewModel: LoginViewModel
+
+    var bDataSourceDirectBroking = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
             loading.visibility = View.GONE
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
-                val intent = Intent(this, SearchActivity::class.java).apply {
+                val intent = Intent(this, SystemConfigActivity::class.java).apply {
                     putExtra("STOCKCODE","KMD")
                 }
                 startActivity(intent)
@@ -81,7 +86,7 @@ class LoginActivity : AppCompatActivity() {
                 if(cbSaveToDB.isChecked)
                     loginViewModel.saveNetworkConfidential(username.text.toString(), password.text.toString())
 
-                val intent = Intent(this, SelectedStocksActivity::class.java)
+                var intent = Intent(this, UserInfoManagerActivity::class.java)
                 startActivity(intent)
             }
             setResult(Activity.RESULT_OK)
@@ -98,6 +103,10 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel.password.observe(this, Observer {
             if(cbSaveToDB.isChecked)
                 password.setText (it.toString())
+        })
+
+        loginViewModel.bDataSourceDirectBroking.observe(this, Observer {
+            bDataSourceDirectBroking = it
         })
 
 //        username.afterTextChanged {
@@ -135,12 +144,13 @@ class LoginActivity : AppCompatActivity() {
 //                putExtra("STOCKCODE","AIR")
 //            }
 //            val intent = Intent(this, SystemConfigActivity::class.java)
-            //val intent = Intent(this, SelectedStocksActivity::class.java)
+
             //val intent = Intent(this, UserInfoManagerActivity::class.java)
 
 //            val intent = Intent(this, TradeLogActivity::class.java).apply {
 //                putExtra("STOCKCODE","KMD")
 //            }
+//            val intent = Intent(this, NZXSelectedStocksActivity::class.java)
 //            startActivity(intent)
 
             loading.visibility = View.VISIBLE

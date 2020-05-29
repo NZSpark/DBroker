@@ -5,12 +5,16 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import nz.co.seclib.dbroker.data.repository.NZXRepository
 import nz.co.seclib.dbroker.data.webdata.AsksRow
 import nz.co.seclib.dbroker.data.webdata.BidsRow
+import nz.co.seclib.dbroker.data.webdata.NZXWeb
 import nz.co.seclib.dbroker.data.webdata.TradesRow
 import org.jsoup.Jsoup
 import java.lang.reflect.Type
 import java.sql.Date
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class StockMarketInfo {
@@ -200,16 +204,66 @@ class StockMarketInfo {
             "Wellington Drive Technologies Limited" ,
             "The Warehouse Group Limited" ,
             "Z Energy Limited")
+    companion object {
+        fun getStockInfoFromNZXWebPage(webPage: String): List<StockInfo> {
+            var stockInfoList = mutableListOf<StockInfo>()
+
+            if (webPage.length < 10)
+                return stockInfoList
+
+            val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+
+            val document = Jsoup.parse(webPage)
+
+            val tableRows = document.select("table[id=instruments-table] tr")
+
+            if (tableRows.size > 0)
+                tableRows.removeAt(0)
+
+            for (i in 0 until tableRows.size) {
+                val row = tableRows[i]
+                val stockInfo = StockInfo()
+                val tds = row.getElementsByTag("td")
+                if (tds.size < 13) continue
+
+                stockInfo.stockCode =
+                    tds[0].text().replace("\u00a0".toRegex(), "").trim { it <= ' ' }
+                stockInfo.companyName =
+                    tds[1].text().replace("\u00a0".toRegex(), "").trim { it <= ' ' }
+                stockInfo.price = tds[2].text().replace("\u00a0".toRegex(), "").replace("$","").trim { it <= ' ' }
+
+                //"$0.060 / 2.73%"
+                val tmpString = tds[3].text().replace("\u00a0".toRegex(), "").trim { it <= ' ' }
+                stockInfo.changeValue = tmpString.substring(0,tmpString.indexOf("/") )
+                stockInfo.changePercent = tmpString.substring(tmpString.indexOf("/") + 1)
+
+                stockInfo.volume = tds[4].text().replace("\u00a0".toRegex(), "").trim { it <= ' ' }
+                stockInfo.value = tds[5].text().replace("\u00a0".toRegex(), "").replace("$","").trim { it <= ' ' }
+                stockInfo.capitalisation =
+                    tds[6].text().replace("\u00a0".toRegex(), "").replace("$","").trim { it <= ' ' }
+                stockInfo.tradeCount =
+                    tds[10].text().replace("\u00a0".toRegex(), "").trim { it <= ' ' }
+
+                stockInfo.infoTime = currentTime
+
+                stockInfoList.add(stockInfo)
+            }
+
+            return stockInfoList
+        }
+    }
 }
 
 class StockInfo {
     var stockCode = ""
     var companyName = ""
     var price = ""
-    var change = ""
+    var changeValue = ""
+    var changePercent = ""
     var volume = ""
     var value = ""
     var capitalisation =""
+    var tradeCount = ""
     var infoTime = ""
 }
 
@@ -228,6 +282,37 @@ class StockCurrentTradeInfo{
     var value = ""
     var infoTime = ""
     var pictLink = ""
+
+    fun copyFromStokInfo(stockInfo :StockInfo){
+        this.stockCode = stockInfo.stockCode
+        this.companyName = stockInfo.companyName
+
+        if(stockInfo.price.indexOf(".") > 0 && stockInfo.price.length > 0) {
+            val sTemp = (stockInfo.price.replace(",", "").toFloat() * 100).toString()
+            if(sTemp.indexOf(".") > 0) {
+                this.price = sTemp.substring(0, sTemp.indexOf("."))
+                if(sTemp.toFloat() - this.price.toFloat() > 0f )
+                    if( sTemp.indexOf(".") + 3 > sTemp.length )
+                        this.price = sTemp
+                    else
+                        this.price = sTemp.substring(0, sTemp.indexOf(".")+3)
+            }
+            else
+                this.price = sTemp
+        }
+        else
+            this.price = stockInfo.price
+
+        this.change = stockInfo.changePercent
+        this.volume = stockInfo.volume
+
+        if(stockInfo.value.indexOf(".") > 0  )
+            this.value = stockInfo.value.substring(0,stockInfo.value.indexOf("."))
+        else
+            this.value = stockInfo.value
+
+        this.infoTime = stockInfo.infoTime
+    }
 }
 
 class StockScreenInfo {
@@ -257,7 +342,43 @@ class StockScreenInfo {
     </tr>
      */
 
+    fun copyFromStokInfo(stockInfo :StockInfo){
+        this.stockCode = stockInfo.stockCode
+        this.companyName = stockInfo.companyName
+
+        if(stockInfo.price.indexOf(".") > 0 && stockInfo.price.length > 0) {
+            val sTemp = (stockInfo.price.replace(",", "").toFloat() * 100).toString()
+            if(sTemp.indexOf(".") > 0) {
+                this.price = sTemp.substring(0, sTemp.indexOf("."))
+                if(sTemp.toFloat() - this.price.toFloat() > 0f )
+                    if( sTemp.indexOf(".") + 3 > sTemp.length )
+                        this.price = sTemp
+                    else
+                        this.price = sTemp.substring(0, sTemp.indexOf(".")+3)
+            }
+            else
+                this.price = sTemp
+        }
+        else
+            this.price = stockInfo.price
+
+        this.changeValue = stockInfo.changeValue
+        this.changePercent = stockInfo.changePercent
+        this.volume = stockInfo.volume
+
+        if(stockInfo.value.indexOf(".") > 0  )
+            this.value = stockInfo.value.substring(0,stockInfo.value.indexOf("."))
+        else
+            this.value = stockInfo.value
+
+        this.marketCap = stockInfo.capitalisation
+        this.tradeNumber = stockInfo.tradeCount
+        this.infoTime = stockInfo.infoTime
+    }
+
     companion object {
+
+
         fun convertScreenInfoListToStockCurrentTradeInfoList(stockScreenInfoList: List<StockScreenInfo>): List<StockCurrentTradeInfo> {
 
             val stockCurrentTradeInfoList = mutableListOf<StockCurrentTradeInfo>()
@@ -432,4 +553,3 @@ class DataConverter {
         return gson.fromJson(tradeListString, type)
     }
 }
-

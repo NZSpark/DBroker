@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.wordplat.easydivider.RecyclerViewCornerRadius
 import com.wordplat.easydivider.RecyclerViewLinearDivider
-import com.wordplat.ikvstockchart.compat.ViewUtils
 import kotlinx.android.synthetic.main.activity_stock_info.*
 import nz.co.seclib.dbroker.R
 import nz.co.seclib.dbroker.adapter.StockInfoAdapter
@@ -24,9 +23,8 @@ import nz.co.seclib.dbroker.data.webdata.CurrentState
 import nz.co.seclib.dbroker.data.webdata.TradesTable
 import nz.co.seclib.dbroker.ui.sysinfo.SystemConfigActivity
 import nz.co.seclib.dbroker.utils.AppUtils
-import nz.co.seclib.dbroker.utils.MyApplication
-import nz.co.seclib.dbroker.viewmodel.StockInfoViewModel
-import nz.co.seclib.dbroker.viewmodel.StockInfoViewModelFactory
+import nz.co.seclib.dbroker.viewmodel.DBStockInfoViewModel
+import nz.co.seclib.dbroker.viewmodel.DBStockInfoViewModelFactory
 
 
 class StockInfoActivity : AppCompatActivity() {
@@ -37,7 +35,7 @@ class StockInfoActivity : AppCompatActivity() {
     var stockCode = ""
     //var stockTradeInfo = StockTradeInfo()
     //private lateinit var stockInfoViewModel: DBrokerViewModel
-    private lateinit var stockInfoViewModel: StockInfoViewModel
+    private lateinit var dbStockInfoViewModel: DBStockInfoViewModel
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,12 +46,12 @@ class StockInfoActivity : AppCompatActivity() {
         stockCode = intent.getStringExtra("STOCKCODE") ?:""
 
         //stockInfoViewModel = DBrokerViewModelFactory(this.application).create(DBrokerViewModel::class.java)
-        stockInfoViewModel = StockInfoViewModelFactory(
+        dbStockInfoViewModel = DBStockInfoViewModelFactory(
             this.application
-        ).create(StockInfoViewModel::class.java)
-        stockInfoViewModel.initWithStockCode(stockCode)
+        ).create(DBStockInfoViewModel::class.java)
+        dbStockInfoViewModel.initWithStockCode(stockCode)
 
-        stockInfoViewModel.stockCurrentTradeInfo.observe(this, Observer {stockCurrentTradeInfo ->
+        dbStockInfoViewModel.stockCurrentTradeInfo.observe(this, Observer { stockCurrentTradeInfo ->
             if(stockCurrentTradeInfo == null) return@Observer
 
             tvCompanyName.text = stockCurrentTradeInfo.companyName + "    " + stockCurrentTradeInfo.infoTime
@@ -99,7 +97,7 @@ class StockInfoActivity : AppCompatActivity() {
         //RecyclerView Decoration --------------------<< end
 
 
-        stockInfoViewModel.askBidLog.observe(this, Observer { askBidLog ->
+        dbStockInfoViewModel.askBidLog.observe(this, Observer { askBidLog ->
             askBidLog?.let {
                 adapter.setAskBidLog(askBidLog)
             }
@@ -182,14 +180,14 @@ class StockInfoActivity : AppCompatActivity() {
         })
 
         ivDBSimplePriceImage.setOnClickListener {
-            val intent = Intent(this, StockChartNZXActivity::class.java).apply {
+            val intent = Intent(this, NZXStockChartActivity::class.java).apply {
                 putExtra("STOCKCODE",stockCode)
             }
             startActivity(intent)
         }
 
         ivAdd.setOnClickListener{
-            stockInfoViewModel.insertUserStock(stockCode)
+            dbStockInfoViewModel.insertUserStock(stockCode)
             Toast.makeText(this,stockCode+ " is added into the selected list!", Toast.LENGTH_LONG).show()
         }
 
@@ -198,7 +196,7 @@ class StockInfoActivity : AppCompatActivity() {
 //        }
 
         ivRemove.setOnClickListener(){
-            stockInfoViewModel.deleteUserStock(stockCode)
+            dbStockInfoViewModel.deleteUserStock(stockCode)
             Toast.makeText(this,stockCode+ " is removed from the selected list!", Toast.LENGTH_LONG).show()
         }
 
@@ -216,7 +214,7 @@ class StockInfoActivity : AppCompatActivity() {
 //        }
 
         ivTradeLog.setOnClickListener {
-            val intent = Intent(this, TradeLogActivity::class.java).apply {
+            val intent = Intent(this, DBTradeLogActivity::class.java).apply {
                 putExtra("STOCKCODE", stockCode)
             }
             startActivity(intent)
@@ -406,7 +404,7 @@ class StockInfoActivity : AppCompatActivity() {
     override fun onOptionsItemSelected( item: MenuItem) :Boolean{
         when (item.itemId){
             R.id.menu_selected_stocks -> {
-                val intent = Intent(this, SelectedStocksActivity::class.java)
+                val intent = Intent(this, DBSelectedStocksActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_stock_info -> {
@@ -418,7 +416,7 @@ class StockInfoActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             R.id.menu_stock_trade_info -> {
-                val intent = Intent(this, TradeLogActivity::class.java).apply {
+                val intent = Intent(this, DBTradeLogActivity::class.java).apply {
                     putExtra("STOCKCODE", stockCode)
                 }
                 startActivity(intent)

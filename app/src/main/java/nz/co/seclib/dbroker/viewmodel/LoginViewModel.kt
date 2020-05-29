@@ -30,10 +30,17 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private var _password = MutableLiveData<String>()
     val password : LiveData<String> = _password
 
+    private var _bDataSourceDirectBroking = MutableLiveData<Boolean> (false)
+    var bDataSourceDirectBroking : LiveData<Boolean> = _bDataSourceDirectBroking
+
     init{
         viewModelScope.launch(Dispatchers.IO){
             _userName.postValue( loginRepository.getPropertyValuebyPropertyName("UserName"))
             _password.postValue( AESEncryption.decrypt(loginRepository.getPropertyValuebyPropertyName("Password")).toString())
+
+            //get datasource
+            val sDataSource = loginRepository.getPropertyValuebyPropertyName("DataSource")
+            _bDataSourceDirectBroking.postValue(sDataSource == "DirectBroking")
         }
     }
 

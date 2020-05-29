@@ -30,7 +30,7 @@
 
     <TextView
         android:id="@+id/tvTradePrice"
-        android:layout_width="40dp"
+        android:layout_width="45dp"
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
         android:paddingRight="5dp"
@@ -57,7 +57,7 @@
 
     <TextView
         android:id="@+id/tvTradeValue"
-        android:layout_width="75dp"
+        android:layout_width="80dp"
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
         android:paddingRight="5dp"

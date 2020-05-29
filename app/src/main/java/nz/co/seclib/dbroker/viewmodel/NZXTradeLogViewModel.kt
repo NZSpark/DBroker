@@ -13,7 +13,7 @@ import nz.co.seclib.dbroker.data.repository.NZXRepository
 import nz.co.seclib.dbroker.data.model.*
 
 @RequiresApi(Build.VERSION_CODES.O)
-class TradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel(){
+class NZXTradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel(){
     //for TradeLogActivity ----begin
     private val _tradeLogList = MutableLiveData<List<TradeLog>>()
     val tradeLogList: LiveData<List<TradeLog>> = _tradeLogList
@@ -92,9 +92,23 @@ class TradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel(){
     }
 
     fun initTradeLogActivity(stockCode: String) = viewModelScope.launch(Dispatchers.IO) {
-        val todayTradeList = nzxRepository.getTodayTradeLog(stockCode).reversed()
-        //val todayTradeList = nzxRepository.getTradeLogByTime("2020-05-15 ","2020-05-15+",stockCode).reversed()
+        var todayTradeList = nzxRepository.getTodayTradeLog(stockCode).reversed()
 
+        //val todayTradeList = nzxRepository.getTradeLogByTime("2020-05-15 ","2020-05-15+",stockCode).reversed()
+        if( todayTradeList.size < 1) {
+            todayTradeList = nzxRepository.getTodayTradeLogFromNZX(stockCode)
+            _entrySet.postValue(nzxRepository.getTodayIntraEntrySet(stockCode))
+        }
+        else {
+            _entrySet.postValue(
+                nzxRepository.expandEntrySet(
+                    nzxRepository.convertTradeLogListToEntrySetByInterval(
+                        todayTradeList,
+                        1
+                    )
+                )
+            )
+        }
         _tradeLogList.postValue(todayTradeList)
         _companyAnalysis.postValue(nzxRepository.getCompanyAnalysisByStockCode(stockCode))
 
@@ -103,7 +117,7 @@ class TradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel(){
         //_entrySet.postValue(nzxRepository.getIntraDayEntrySetByStockCode(stockCode))
         //_entrySet.postValue(nzxRepository.getTodayIntraEntrySet(stockCode))
         //_entrySet.postValue(nzxRepository.expandEntrySet( nzxRepository.convertTradeLogListToEntrySetByInterval(todayTradeList,1,"TimeLine")))
-        _entrySet.postValue(nzxRepository.expandEntrySet( nzxRepository.convertTradeLogListToEntrySetByInterval(todayTradeList,1)))
+
     }
 
 }

@@ -4,6 +4,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.wordplat.ikvstockchart.entry.Entry
 import com.wordplat.ikvstockchart.entry.EntrySet
+import nz.co.seclib.dbroker.data.database.StockCurrentTradeInfo
+import nz.co.seclib.dbroker.data.database.StockInfo
+import nz.co.seclib.dbroker.data.database.StockMarketInfo
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -62,8 +65,24 @@ class NZXWeb {
         return jsonString
     }
 
+    //timeline entry, only 3 elements. don't split 5 mins.
+    fun copyIntraDayInfoToEntrySet(intraDayInfoList:List<NZXIntraDayInfo>) : EntrySet{
+        val entrySet = EntrySet()
+        for (intraDayInfo in intraDayInfoList) {
+            if( intraDayInfo.price < 0.001 ) continue
+            entrySet.addEntry(
+                Entry(
+                    intraDayInfo.price,
+                    intraDayInfo.volume,
+                    intraDayInfo.time
+                )
+            )
+        }
+        return entrySet
+    }
 
-    //timeline entry, only 3 elements.
+
+    //timeline entry, only 3 elements. split 5 mins to 1 min
     fun copyIntraDayInfoToChartEntrySet(intraDayInfoList:List<NZXIntraDayInfo>) : EntrySet{
         val entrySet = EntrySet()
         for (intraDayInfo in intraDayInfoList) {
@@ -143,6 +162,16 @@ class NZXWeb {
             it.body?.close()
         }
         return webPage
+    }
+
+
+    fun getStockInfo():  List<StockInfo>  {
+        var stockInfoList = listOf<StockInfo>()
+        val url = "https://www.nzx.com/markets/NZSX"
+
+        val stockInfoPage = getWebPageByUrl(url)
+        stockInfoList = StockMarketInfo.getStockInfoFromNZXWebPage(stockInfoPage)
+        return stockInfoList
     }
 
     companion object {

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">DBroker</string>
     <string name="author">spark.zheng@outlook.com</string>
-    <string name="description">Direct Broking Mobile Client</string>
+    <string name="description"> </string>
     <string name="privacy">Privacy Policy</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
@@ -37,6 +37,7 @@
 
     <string name="system_info_enable">Enable</string>
     <string name="system_info_disable">Disable</string>
+    <string name="system_info_data_source">Data Source: </string>
 
     <string name="selected_stocks">Selected</string>
     <string name="rank_value">Value</string>

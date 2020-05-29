@@ -20,7 +20,6 @@ import com.wordplat.ikvstockchart.KLineHandler
 import com.wordplat.ikvstockchart.drawing.KLineVolumeDrawing
 import com.wordplat.ikvstockchart.drawing.KLineVolumeHighlightDrawing
 import com.wordplat.ikvstockchart.entry.Entry
-import com.wordplat.ikvstockchart.entry.SizeColor
 import com.wordplat.ikvstockchart.entry.StockKLineVolumeIndex
 import com.wordplat.ikvstockchart.render.TimeVolumeLineRender
 import kotlinx.android.synthetic.main.activity_stock_tradelog.*
@@ -31,11 +30,11 @@ import nz.co.seclib.dbroker.R
 import nz.co.seclib.dbroker.adapter.TradeLogListAdapter
 import nz.co.seclib.dbroker.ui.sysinfo.SystemConfigActivity
 import nz.co.seclib.dbroker.utils.AppUtils
-import nz.co.seclib.dbroker.viewmodel.TradeLogViewModel
-import nz.co.seclib.dbroker.viewmodel.TradeLogViewModelFactory
+import nz.co.seclib.dbroker.viewmodel.DBTradeLogViewModel
+import nz.co.seclib.dbroker.viewmodel.DBTradeLogViewModelFactory
 
-class TradeLogActivity : AppCompatActivity() , CoroutineScope by MainScope(){
-    private lateinit var tradeLogViewModel: TradeLogViewModel
+class DBTradeLogActivity : AppCompatActivity() , CoroutineScope by MainScope(){
+    private lateinit var dbTradeLogViewModel: DBTradeLogViewModel
     var stockCode = ""
 
     override fun onDestroy() {
@@ -76,18 +75,18 @@ class TradeLogActivity : AppCompatActivity() , CoroutineScope by MainScope(){
         rvTradeLog.addItemDecoration(linearDivider)
         //RecyclerView Decoration --------------------<< end
 
-        tradeLogViewModel = TradeLogViewModelFactory(
+        dbTradeLogViewModel = DBTradeLogViewModelFactory(
             this.application
-        ).create(TradeLogViewModel::class.java)
+        ).create(DBTradeLogViewModel::class.java)
 //      tradeLogViewModel = ViewModelProviders.of(this, TradeLogViewModelFactory(this.application))
 //            .get(TradeLogViewModel::class.java)
 
 
-        tradeLogViewModel.tradeLogList.observe(this, Observer {
+        dbTradeLogViewModel.tradeLogList.observe(this, Observer {
             adapter.setTradeLog(it)
         })
 
-        tradeLogViewModel.entrySet.observe(this, Observer { entrySet ->
+        dbTradeLogViewModel.entrySet.observe(this, Observer { entrySet ->
             //x-axis lable, it's fixed in TimeLineRender.
             if(entrySet.entryList.size > 5) {
                 entrySet.entryList[0].xLabel = "10:00"
@@ -168,13 +167,13 @@ class TradeLogActivity : AppCompatActivity() , CoroutineScope by MainScope(){
             }
         })
 
-        tradeLogViewModel.companyAnalysis.observe(this, Observer {
+        dbTradeLogViewModel.companyAnalysis.observe(this, Observer {
             tvCompanyAnalysis.text = Html.fromHtml(it, Html.FROM_HTML_MODE_COMPACT)
         })
         //if only handle local data, then common init should be comment out.
         //stockInfoViewModel.initWithStockCode(stockCode)
         //initTradeLogActivity is included in initWithStockCode, only one of them should be invoked.
-        tradeLogViewModel.initTradeLogActivity(stockCode)
+        dbTradeLogViewModel.initTradeLogActivity(stockCode)
 
     }
 
@@ -221,7 +220,7 @@ class TradeLogActivity : AppCompatActivity() , CoroutineScope by MainScope(){
     override fun onOptionsItemSelected( item: MenuItem) :Boolean{
         when (item.itemId){
             R.id.menu_selected_stocks -> {
-                val intent = Intent(this, SelectedStocksActivity::class.java)
+                val intent = Intent(this, DBSelectedStocksActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_stock_info -> {
@@ -235,7 +234,7 @@ class TradeLogActivity : AppCompatActivity() , CoroutineScope by MainScope(){
                 startActivity(intent)
             }
             R.id.menu_stock_trade_info -> {
-                val intent = Intent(this, TradeLogActivity::class.java)
+                val intent = Intent(this, DBTradeLogActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_system_parameters -> {

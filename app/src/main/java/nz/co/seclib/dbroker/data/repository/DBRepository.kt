@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-class TradeLogRepository(private val dbDao: DBrokerDAO, private val dbWeb: DirectBrokingWeb) {
+class DBRepository(private val dbDao: DBrokerDAO, private val dbWeb: DirectBrokingWeb) {
 
     private var mCurrentState: CurrentState? = null
     private var lastTradeLogList = emptyList<TradeLog>()

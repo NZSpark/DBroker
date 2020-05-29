@@ -7,20 +7,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import nz.co.seclib.dbroker.data.database.DBrokerRoomDatabase
 import nz.co.seclib.dbroker.data.webdata.DirectBrokingWeb
-import nz.co.seclib.dbroker.data.repository.TradeLogRepository
+import nz.co.seclib.dbroker.data.repository.DBRepository
 
-class StockInfoViewModelFactory(var application: Application): ViewModelProvider.Factory  {
+class DBStockInfoViewModelFactory(var application: Application): ViewModelProvider.Factory  {
     companion object{
-        var instance: StockInfoViewModel? = null
+        var instance: DBStockInfoViewModel? = null
     }
     @RequiresApi(Build.VERSION_CODES.O)
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(StockInfoViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(DBStockInfoViewModel::class.java)) {
             if(instance == null)
                 instance =
-                    StockInfoViewModel(
-                        tradeLogRepository = TradeLogRepository(
+                    DBStockInfoViewModel(
+                        dbRepository = DBRepository(
                             dbDao = DBrokerRoomDatabase.getDatabase(application).dbrokerDAO(),
                             dbWeb = DirectBrokingWeb.newInstance()
                         )

@@ -23,11 +23,11 @@ import nz.co.seclib.dbroker.adapter.SelectedStockListAdapter
 import nz.co.seclib.dbroker.ui.sysinfo.SystemConfigActivity
 import nz.co.seclib.dbroker.ui.userinfo.UserInfoManagerActivity
 import nz.co.seclib.dbroker.utils.AppUtils
-import nz.co.seclib.dbroker.viewmodel.StockInfoViewModel
-import nz.co.seclib.dbroker.viewmodel.StockInfoViewModelFactory
+import nz.co.seclib.dbroker.viewmodel.DBStockInfoViewModel
+import nz.co.seclib.dbroker.viewmodel.DBStockInfoViewModelFactory
 
-class SelectedStocksActivity : AppCompatActivity(){
-    private lateinit var selectStockViewModel: StockInfoViewModel
+class DBSelectedStocksActivity : AppCompatActivity(){
+    private lateinit var selectStockViewModel: DBStockInfoViewModel
     var bShowSelectedList = true
 
 
@@ -37,9 +37,9 @@ class SelectedStocksActivity : AppCompatActivity(){
         setContentView(R.layout.activity_selected_stock_list)
 
         //selectStockViewModel = DBrokerViewModelFactory(this.application).create(DBrokerViewModel::class.java)
-        selectStockViewModel = StockInfoViewModelFactory(
+        selectStockViewModel = DBStockInfoViewModelFactory(
             this.application
-        ).create(StockInfoViewModel::class.java)
+        ).create(DBStockInfoViewModel::class.java)
         selectStockViewModel.initWithStockCode("") //initial timer.
 
         val fab: FloatingActionButton = findViewById(R.id.fab)
@@ -90,7 +90,7 @@ class SelectedStocksActivity : AppCompatActivity(){
 
         selectStockViewModel.stockCurrentTradeInfoList.observe(this, Observer {
             it?.let{
-                adapter.setStocks(it)
+                adapter.setStocks(it,true)
             }
         })
 
@@ -155,7 +155,7 @@ class SelectedStocksActivity : AppCompatActivity(){
     override fun onOptionsItemSelected( item: MenuItem) :Boolean{
         when (item.itemId){
             R.id.menu_selected_stocks -> {
-                val intent = Intent(this, SelectedStocksActivity::class.java)
+                val intent = Intent(this, DBSelectedStocksActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_stock_info -> {
@@ -167,7 +167,7 @@ class SelectedStocksActivity : AppCompatActivity(){
                 startActivity(intent)
             }
             R.id.menu_stock_trade_info -> {
-                val intent = Intent(this, TradeLogActivity::class.java)
+                val intent = Intent(this, DBTradeLogActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_system_parameters -> {

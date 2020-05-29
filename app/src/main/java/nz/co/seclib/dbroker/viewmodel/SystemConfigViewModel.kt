@@ -25,6 +25,10 @@ class SystemConfigViewModel(private val systemConfigRepository: SystemConfigRepo
     private var _password = MutableLiveData<String>()
     val password = _password
 
+    //DataSource
+    private var _dataSource = MutableLiveData<String>()
+    val dataSource = _dataSource
+
     private val viewModelJob = SupervisorJob()
 
     init {
@@ -44,6 +48,10 @@ class SystemConfigViewModel(private val systemConfigRepository: SystemConfigRepo
             sTemp = getPasswordFromDB()
             if (sTemp != "")
                 _password.postValue(sTemp)
+
+            sTemp = getDataSourceFromDB()
+            if (sTemp != "")
+                _dataSource.postValue(sTemp)
         }
     }
 
@@ -71,18 +79,28 @@ class SystemConfigViewModel(private val systemConfigRepository: SystemConfigRepo
         return systemConfigRepository.getPropertyValuebyPropertyName("UserName")
     }
 
-    fun saveUserNameToDB(timerInterval:String){
+    fun saveUserNameToDB(userName:String){
         CoroutineScope(viewModelJob).launch {
-            systemConfigRepository.saveProperty("UserName", timerInterval)
+            systemConfigRepository.saveProperty("UserName", userName)
         }
     }
     fun getPasswordFromDB():String{
         return AESEncryption.decrypt( systemConfigRepository.getPropertyValuebyPropertyName("Password")).toString()
     }
 
-    fun savePasswordToDB(timerInterval:String){
+    fun savePasswordToDB(password:String){
         CoroutineScope(viewModelJob).launch {
-            systemConfigRepository.saveProperty("Password", timerInterval)
+            systemConfigRepository.saveProperty("Password", password)
+        }
+    }
+
+    fun getDataSourceFromDB():String{
+        return systemConfigRepository.getPropertyValuebyPropertyName("DataSource")
+    }
+
+    fun saveDataSourceToDB(dataSource:String){
+        CoroutineScope(viewModelJob).launch {
+            systemConfigRepository.saveProperty("DataSource", dataSource)
         }
     }
 }

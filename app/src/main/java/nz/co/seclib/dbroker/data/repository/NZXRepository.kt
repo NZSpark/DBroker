@@ -6,15 +6,75 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.wordplat.ikvstockchart.entry.Entry
 import com.wordplat.ikvstockchart.entry.EntrySet
-import nz.co.seclib.dbroker.data.database.DBrokerDAO
+import nz.co.seclib.dbroker.data.database.*
 import nz.co.seclib.dbroker.data.webdata.NZXWeb
-import nz.co.seclib.dbroker.data.database.TradeLog
 import nz.co.seclib.dbroker.data.webdata.NZXIntraDayInfo
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
 class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
+
+    var stockInfoList = listOf<StockInfo>()
+
+    fun getStockInfo(): List<StockInfo> {
+        stockInfoList =  nzxWeb.getStockInfo()
+        return stockInfoList
+    }
+
+    fun getCurrentTradeInfoByStockCode(stockCode: String): StockCurrentTradeInfo?
+    {
+        val stockCurrentTradeInfo = StockCurrentTradeInfo()
+
+        //should be done only once.
+        //stockInfoList = getStockInfo()
+
+        stockInfoList.forEach {stockInfo ->
+            if(stockInfo.stockCode == stockCode) {
+                stockCurrentTradeInfo.copyFromStokInfo(stockInfo)
+                return@forEach
+            }
+        }
+
+        return stockCurrentTradeInfo
+    }
+
+    suspend fun insertUserStock(newStockCode: UserStock){
+        dbDao.insertUserStock(newStockCode)
+    }
+    suspend fun deleteUserStock(newStockCode: UserStock){
+        dbDao.deleteUserStock(newStockCode)
+    }
+
+    fun selectStockCodeByUserID(userID: String): List<String>{
+        return dbDao.selectStockCodeByUserID(userID)
+    }
+
+    fun getPropertyValuebyPropertyName(propertyName:String):String{
+        val propertyList = dbDao.selectSystemConfigInfoByPropertyName(propertyName)
+        if(propertyList.size == 0) return ""
+        return propertyList[0].propertyValue.toString()
+    }
+
+    suspend fun saveProperty(propertyName: String,propertyValue:String){
+        val propertyList = dbDao.selectSystemConfigInfoByPropertyName(propertyName)
+        if(propertyList.size == 0) {
+            val newSystemConfigInfo =
+                SystemConfigInfo(
+                    propertyName,
+                    propertyValue
+                )
+            dbDao.insertSystemConfigInfo(newSystemConfigInfo)
+        }else{
+            val newSystemConfigInfo =
+                SystemConfigInfo(
+                    propertyName,
+                    propertyValue
+                )
+            dbDao.updateSystemConfigInfo(newSystemConfigInfo)
+        }
+    }
+
 
     fun String.toDate(dateFormat: String = "yyyy-MM-dd HH:mm:ss", timeZone: TimeZone = TimeZone.getTimeZone("UTC")): Date {
         val parser = SimpleDateFormat(dateFormat, Locale.getDefault())
@@ -32,7 +92,7 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
     fun timeFormat(inTime:String):String{
 //        "2020-04-28T10:10:00.000+12:00"
 //        "2020-04-28 10:10:00"
-        return inTime.replace("T"," ").replace(".000+12:00","")
+        return inTime.replace("T"," ").replace(":00.000+12:00","")
     }
 
     fun getCompanyAnalysisByStockCode(stockCode:String):String{
@@ -57,7 +117,7 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
 
 
     fun getTodayIntraEntrySet(stockCode:String) : EntrySet{
-        val entrySet = getIntraDayEntrySetByStockCode(stockCode)
+        val entrySet = getIntraDayChartEntrySetByStockCode(stockCode)
         val newEntrySet = EntrySet()
         val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
@@ -68,8 +128,7 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
                     Entry(
                         it.close,
                         it.volume,
-                        ""
-                        //timeFormat(it.xLabel).replace(today,"").trim()
+                        timeFormat(it.xLabel).replace(today,"").trim()
                     )
                 )
         }
@@ -78,6 +137,13 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
 
     //line data
     fun getIntraDayEntrySetByStockCode(stockCode:String):EntrySet{
+        return nzxWeb.copyIntraDayInfoToEntrySet(
+            nzxWeb.convertJsonToIntradayInfoList(
+                nzxWeb.getIntraDayJson(stockCode)))
+    }
+
+    //line data
+    fun getIntraDayChartEntrySetByStockCode(stockCode:String):EntrySet{
         return nzxWeb.copyIntraDayInfoToChartEntrySet(
             nzxWeb.convertJsonToIntradayInfoList(
                 nzxWeb.getIntraDayJson(stockCode)))
@@ -287,102 +353,78 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
         return newEntrySet
     }
 
-    /*
-    fun convertTradeLogListToEntrySetByInterval(inTradeLogList: List<TradeLog>, minsInterval :Int) : EntrySet{
-        val tradeLogList = inTradeLogList.reversed()
-        val entrySet = EntrySet()
-        val sartTime = SimpleDateFormat("HH:mm", Locale.getDefault()).parse("09:45")
-        val endTime = SimpleDateFormat("HH:mm", Locale.getDefault()).parse("17:15")
-        var currentTimeIntervalStart = sartTime
-        var currentTimeIntervalEnd = sartTime
+    fun getScreenInfoListByType(sortType: String): List<StockScreenInfo> {
+        val stockScreenInfoList = mutableListOf<StockScreenInfo>()
 
-        var iPos = 0
+        this.stockInfoList = sortStockInfoList(sortType)
 
-        var calendar = GregorianCalendar()
+        this.stockInfoList.forEach {stockInfo ->
+            val stockStockInfo = StockScreenInfo()
+            stockStockInfo.copyFromStokInfo(stockInfo)
+            stockScreenInfoList.add(stockStockInfo)
+        }
 
+        return stockScreenInfoList
+    }
 
-        while(currentTimeIntervalStart < endTime && iPos < tradeLogList.size){
-            //calculate new time span.
-            calendar.time = currentTimeIntervalStart
-            calendar.add(GregorianCalendar.MINUTE, minsInterval)
-            currentTimeIntervalEnd = calendar.time
+    fun storeTradeInfoFromWebToDBByStockCode(newStockCode: String) {
 
-            //pass time span if no trades.
-            if(currentTimeIntervalEnd < SimpleDateFormat("HH:mm", Locale.getDefault()).parse(tradeLogList[iPos].tradeTime.replace("2020-05-15 ","")) ) {
-                currentTimeIntervalStart = currentTimeIntervalEnd
-                continue
+    }
+
+    fun sortStockInfoList(sortType:String) : List<StockInfo>{
+        var stockInfoList = emptyList<StockInfo>()
+
+        if(sortType == "VALUE") {
+            stockInfoList = this.stockInfoList.sortedByDescending {
+                it.value.replace(",", "").toFloat()
             }
+        }
 
-            var open_price = tradeLogList[iPos].price.toFloat()
-            var high_price = tradeLogList[iPos].price.toFloat()
-            var low_price = tradeLogList[iPos].price.toFloat()
-            var close_price = tradeLogList[iPos].price.toFloat()
-            var volume = tradeLogList[iPos].tradeVolume.replace(",","").toInt()
-            var date = tradeLogList[iPos].tradeTime.replace("2020-05-15 ","")
-
-            iPos++
-
-            while(iPos < tradeLogList.size ){
-                if(SimpleDateFormat("HH:mm", Locale.getDefault()).parse(tradeLogList[iPos].tradeTime.replace("2020-05-15 ","")) > currentTimeIntervalEnd) break
-                if(tradeLogList[iPos].price.toFloat() > high_price) high_price = tradeLogList[iPos].price.toFloat()
-                if(tradeLogList[iPos].price.toFloat() < low_price ) low_price = tradeLogList[iPos].price.toFloat()
-                close_price = tradeLogList[iPos].price.toFloat()
-                volume += tradeLogList[iPos].tradeVolume.replace(",","").toInt()
-                iPos++
+        if(sortType == "PERCENTCHANGE") {
+            stockInfoList = this.stockInfoList.sortedByDescending {
+                it.changePercent.replace("%", "").toFloat()
             }
+        }
 
-            entrySet.addEntry(
-                Entry(
-                    open_price,
-                    high_price,
-                    low_price,
-                    close_price,
-                    volume,
-                    date
+        if(sortType == "MKTCAP") {
+            stockInfoList = this.stockInfoList.sortedByDescending {
+                it.capitalisation.replace(",", "").toFloat()
+            }
+        }
+
+        return stockInfoList
+    }
+
+    fun getTodayTradeLogFromNZX(stockCode: String): List<TradeLog> {
+        val tradeLogList = mutableListOf<TradeLog>()
+
+        //split to 1 mins.
+//        val entrySet = getTodayIntraEntrySet(stockCode)
+//        entrySet.entryList.forEach { entry->
+//            val tradeLog = TradeLog(0,stockCode,entry.volume.toString(),entry.xLabel,entry.close.toString(),"")
+//            tradeLogList.add(tradeLog)
+//        }
+
+        //keep 5 mins.
+        val entrySet = getIntraDayEntrySetByStockCode(stockCode)
+        val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+        entrySet.entryList.forEach { entry ->
+            val entryTime = timeFormat(entry.xLabel)
+            if (entryTime > today) {
+                val tradeLog = TradeLog(
+                    0,
+                    stockCode,
+                    entry.volume.toString(),
+                    timeFormat(entry.xLabel).replace(today,"").trim(),
+                    entry.close.toString(),
+                    ""
                 )
-            )
-            currentTimeIntervalStart = currentTimeIntervalEnd
-        }
-
-        return entrySet
-    }
-    */
-
-    /*
-    fun convertTradeLogListByInterval(tradeLogList: List<TradeLog>, minsInterval :Int) :List<TradeLog>{
-        val newTradeLogList = mutableListOf<TradeLog>()
-        val iLoopNumber :Int = tradeLogList.size / minsInterval
-        val iLeftNumber  = tradeLogList.size - iLoopNumber * minsInterval
-
-        for( i in 0..iLoopNumber - 1){
-            val tradeLog = TradeLog(id=0)
-            var sumValue :Float = 0F
-            for(j in 0..minsInterval - 1){
-                sumValue = tradeLog.price.toFloat() *  tradeLogList[i*minsInterval+j].tradeVolume.toInt()
-                tradeLog.tradeVolume = (tradeLog.tradeVolume.replace(",","").toInt() + tradeLogList[i*minsInterval+j].tradeVolume.replace(",","").toInt()).toString()
-                tradeLog.tradeCondition += tradeLogList[i*minsInterval+j].tradeCondition
+                tradeLogList.add(tradeLog)
             }
-            tradeLog.price = (sumValue / tradeLog.tradeVolume.toInt() ).toString()
-            tradeLog.tradeVolume = (tradeLog.tradeVolume.replace(",","").toInt()/minsInterval).toString()
-
-            newTradeLogList.add(tradeLog)
         }
 
-        if( iLeftNumber > 0 ){
-            val tradeLog = TradeLog(id=0)
-            var sumValue :Float = 0F
-            for(i in iLoopNumber * minsInterval..tradeLogList.size - 1){
-                sumValue = tradeLog.price.toFloat() *  tradeLogList[i].tradeVolume.toInt()
-                tradeLog.tradeVolume = (tradeLog.tradeVolume.replace(",","").toInt() + tradeLogList[i].tradeVolume.replace(",","").toInt()).toString()
-                tradeLog.tradeCondition += tradeLogList[i].tradeCondition
-            }
-            tradeLog.price = (sumValue / tradeLog.tradeVolume.toInt() ).toString()
-            tradeLog.tradeVolume = (tradeLog.tradeVolume.replace(",","").toInt()/minsInterval).toString()
-
-            newTradeLogList.add(tradeLog)
-        }
-
-        return newTradeLogList
+        return tradeLogList.reversed()
     }
-     */
+
 }

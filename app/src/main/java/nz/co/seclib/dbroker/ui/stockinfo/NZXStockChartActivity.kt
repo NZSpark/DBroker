@@ -9,8 +9,6 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.MotionEvent
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.wordplat.ikvstockchart.InteractiveKLineLayout
@@ -22,6 +20,8 @@ import com.wordplat.ikvstockchart.render.KLineRender
 import kotlinx.android.synthetic.main.activity_stock_chart_nzx.*
 import nz.co.seclib.dbroker.R
 import nz.co.seclib.dbroker.data.webdata.NZXWeb
+import nz.co.seclib.dbroker.viewmodel.NZXStockInfoViewModel
+import nz.co.seclib.dbroker.viewmodel.NZXStockInfoViewModelFactory
 //import org.xutils.view.annotation.ContentView
 //import org.xutils.view.annotation.ViewInject
 import java.util.*
@@ -35,7 +35,7 @@ import java.util.*
  * @author afon
  */
 
-class StockChartNZXActivity : AppCompatActivity() {
+class NZXStockChartActivity : AppCompatActivity() {
     
     var kLineLayout: InteractiveKLineLayout? = null
 
@@ -70,6 +70,28 @@ class StockChartNZXActivity : AppCompatActivity() {
         supportActionBar!!.setTitle("Candle Chart : $stockCode")
         initUI()
         loadKLineData(stockCode)
+
+        val nzxStockViewModel = NZXStockInfoViewModelFactory(
+            this.application
+        ).create(NZXStockInfoViewModel::class.java)
+        nzxStockViewModel.initWithStockCode(stockCode) //initial timer.
+
+        ivChartAdd.setOnClickListener{
+            nzxStockViewModel.insertUserStock(stockCode)
+            Toast.makeText(this,stockCode+ " is added into the selected list!", Toast.LENGTH_LONG).show()
+        }
+
+        ivChartRemove.setOnClickListener(){
+            nzxStockViewModel.deleteUserStock(stockCode)
+            Toast.makeText(this,stockCode+ " is removed from the selected list!", Toast.LENGTH_LONG).show()
+        }
+
+        ivChartTradeLog.setOnClickListener(){
+            val intent = Intent(this, NZXTradeLogActivity::class.java).apply {
+                putExtra("STOCKCODE", stockCode)
+            }
+            startActivity(intent)
+        }
     }
 
     private fun initUI() {
@@ -218,7 +240,7 @@ class StockChartNZXActivity : AppCompatActivity() {
                         insertEntries()
                     if (entries.size == 0) {
                         Toast.makeText(
-                            this@StockChartNZXActivity,
+                            this@NZXStockChartActivity,
                             "已经到达最左边了",
                             Toast.LENGTH_SHORT
                         ).show()
@@ -241,7 +263,7 @@ class StockChartNZXActivity : AppCompatActivity() {
                         addEntries()
                     if (entries.size == 0) {
                         Toast.makeText(
-                            this@StockChartNZXActivity,
+                            this@NZXStockChartActivity,
                             "已经到达最右边了",
                             Toast.LENGTH_SHORT
                         ).show()
@@ -385,7 +407,7 @@ class StockChartNZXActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "Activity"
         fun createIntent(context: Context?): Intent {
-            return Intent(context, StockChartNZXActivity::class.java)
+            return Intent(context, NZXStockChartActivity::class.java)
         }
     }
 }

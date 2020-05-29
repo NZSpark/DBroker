@@ -12,9 +12,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import nz.co.seclib.dbroker.R
 import nz.co.seclib.dbroker.ui.stockinfo.SearchActivity
-import nz.co.seclib.dbroker.ui.stockinfo.SelectedStocksActivity
+import nz.co.seclib.dbroker.ui.stockinfo.DBSelectedStocksActivity
 import nz.co.seclib.dbroker.ui.stockinfo.StockInfoActivity
-import nz.co.seclib.dbroker.ui.stockinfo.TradeLogActivity
+import nz.co.seclib.dbroker.ui.stockinfo.DBTradeLogActivity
 import nz.co.seclib.dbroker.utils.AESEncryption
 import nz.co.seclib.dbroker.viewmodel.SystemConfigViewModel
 import nz.co.seclib.dbroker.viewmodel.SystemConfigViewModelFactory
@@ -47,6 +47,12 @@ class SystemConfigActivity : AppCompatActivity() , CoroutineScope by MainScope()
             etPassword.setText(it)
         })
 
+        systemConfigViewModel.dataSource.observe(this, Observer {
+            if(it == "DirectBroking")
+                rbDataSourceDirctBroking.isChecked = true
+            else
+                rbDataSourceNZX.isChecked = true
+        })
 
         ivSave.setOnClickListener {
             systemConfigViewModel.saveTimerIntervalToDB(etTimerInterval.text.toString())
@@ -56,6 +62,12 @@ class SystemConfigActivity : AppCompatActivity() , CoroutineScope by MainScope()
                 systemConfigViewModel.saveTimerEnableToDB("FALSE")
             systemConfigViewModel.saveUserNameToDB(etUserName.text.toString())
             systemConfigViewModel.savePasswordToDB(AESEncryption.encrypt( etPassword.text.toString()).toString())
+
+            if(rbDataSourceDirctBroking.isChecked)
+                systemConfigViewModel.saveDataSourceToDB(rbDataSourceDirctBroking.text.toString())
+            if(rbDataSourceNZX.isChecked)
+                systemConfigViewModel.saveDataSourceToDB(rbDataSourceNZX.text.toString())
+
             Toast.makeText(this,"System properties are stored in database!", Toast.LENGTH_LONG).show()
         }
     }
@@ -69,7 +81,7 @@ class SystemConfigActivity : AppCompatActivity() , CoroutineScope by MainScope()
     override fun onOptionsItemSelected( item: MenuItem) :Boolean{
         when (item.itemId){
             R.id.menu_selected_stocks -> {
-                val intent = Intent(this, SelectedStocksActivity::class.java)
+                val intent = Intent(this, DBSelectedStocksActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_stock_info -> {
@@ -81,7 +93,7 @@ class SystemConfigActivity : AppCompatActivity() , CoroutineScope by MainScope()
                 startActivity(intent)
             }
             R.id.menu_stock_trade_info -> {
-                val intent = Intent(this, TradeLogActivity::class.java)
+                val intent = Intent(this, DBTradeLogActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_system_parameters -> {

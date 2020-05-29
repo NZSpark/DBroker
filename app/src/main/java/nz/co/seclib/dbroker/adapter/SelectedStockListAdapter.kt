@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import nz.co.seclib.dbroker.R
 import nz.co.seclib.dbroker.data.database.StockCurrentTradeInfo
+import nz.co.seclib.dbroker.ui.stockinfo.NZXStockChartActivity
 import nz.co.seclib.dbroker.ui.stockinfo.StockInfoActivity
 
 class SelectedStockListAdapter  internal constructor(
@@ -20,6 +21,7 @@ class SelectedStockListAdapter  internal constructor(
     //private var stocks = mutableListOf<StockCurrentTradeInfo>() // Cached copy of words
     private var stocks = listOf<StockCurrentTradeInfo>() // Cached copy of words
 
+    private var bDataSourceDirectBroking = false
 
     inner class StockInfoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvSelectedListStockCode: TextView  = itemView.findViewById(R.id.tvSelectedListStockCode)
@@ -35,10 +37,17 @@ class SelectedStockListAdapter  internal constructor(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StockInfoViewHolder {
         val itemView = inflater.inflate(R.layout.recyclerview_stockinfo, parent, false)
         itemView.setOnClickListener {
-            val intent = Intent(it.context,
-                StockInfoActivity::class.java).apply {
+            var intent = Intent(it.context,
+                NZXStockChartActivity::class.java).apply {
                 val stockCode = it.findViewById<TextView>(R.id.tvSelectedListStockCode).text.toString()
                 putExtra("STOCKCODE",stockCode)
+            }
+            if(bDataSourceDirectBroking){
+                intent = Intent(it.context,
+                    StockInfoActivity::class.java).apply {
+                    val stockCode = it.findViewById<TextView>(R.id.tvSelectedListStockCode).text.toString()
+                    putExtra("STOCKCODE",stockCode)
+                }
             }
             startActivity(it.context,intent,null)
         }
@@ -109,7 +118,8 @@ class SelectedStockListAdapter  internal constructor(
     }
     */
 
-    internal fun setStocks(stockCurrentTradeInfoList: List<StockCurrentTradeInfo>){
+    internal fun setStocks(stockCurrentTradeInfoList: List<StockCurrentTradeInfo>, bDataSourceDirectBroking:Boolean){
+        this.bDataSourceDirectBroking = bDataSourceDirectBroking
         this.stocks = stockCurrentTradeInfoList
         notifyDataSetChanged()
     }

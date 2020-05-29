@@ -9,14 +9,12 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.wordplat.ikvstockchart.compat.ViewUtils
-import kotlinx.android.synthetic.main.activity_stock_charts_old.*
 import kotlinx.android.synthetic.main.activity_stock_charts_old.btShowStockInfo
 import kotlinx.android.synthetic.main.activity_stock_charts_old.spStockCodeList
 import kotlinx.android.synthetic.main.activity_stock_search.*
 import nz.co.seclib.dbroker.R
 import nz.co.seclib.dbroker.ui.sysinfo.SystemConfigActivity
 import nz.co.seclib.dbroker.utils.MyApplication
-import java.text.AttributedCharacterIterator
 
 class SearchActivity: AppCompatActivity() {
    override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +39,7 @@ class SearchActivity: AppCompatActivity() {
                }
            }
            if (rbSearchNZX.isChecked) {
-               intent = Intent(this, StockChartNZXActivity::class.java).apply {
+               intent = Intent(this, NZXStockChartActivity::class.java).apply {
                    putExtra("STOCKCODE", spStockCodeList.selectedItem.toString())
                }
            }
@@ -73,7 +71,7 @@ class SearchActivity: AppCompatActivity() {
                         }
                     }
                     if (rbSearchNZX.isChecked) {
-                        intent = Intent(this, StockChartNZXActivity::class.java).apply {
+                        intent = Intent(this, NZXStockChartActivity::class.java).apply {
                             putExtra("STOCKCODE", tvStock.text.toString())
                         }
                     }
@@ -97,7 +95,7 @@ class SearchActivity: AppCompatActivity() {
     override fun onOptionsItemSelected( item: MenuItem) :Boolean{
         when (item.itemId){
             R.id.menu_selected_stocks -> {
-                val intent = Intent(this, SelectedStocksActivity::class.java)
+                val intent = Intent(this, DBSelectedStocksActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_stock_info -> {
@@ -109,7 +107,7 @@ class SearchActivity: AppCompatActivity() {
                 startActivity(intent)
             }
             R.id.menu_stock_trade_info -> {
-                val intent = Intent(this, TradeLogActivity::class.java)
+                val intent = Intent(this, DBTradeLogActivity::class.java)
                 startActivity(intent)
             }
             R.id.menu_system_parameters -> {

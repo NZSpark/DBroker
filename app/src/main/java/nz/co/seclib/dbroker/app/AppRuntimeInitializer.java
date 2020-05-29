@@ -14,7 +14,7 @@ import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import nz.co.seclib.dbroker.ui.stockinfo.SelectedStocksActivity;
+import nz.co.seclib.dbroker.ui.stockinfo.DBSelectedStocksActivity;
 import nz.co.seclib.dbroker.utils.AppUtils;
 
 import java.lang.ref.WeakReference;
@@ -46,7 +46,7 @@ public enum AppRuntimeInitializer {
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
                 AppRuntime.sActivities.add(activity);
 
-                if (activity instanceof SelectedStocksActivity) {
+                if (activity instanceof DBSelectedStocksActivity) {
                     requestIMEIforMIfNeeded(activity);
                 }
             }
