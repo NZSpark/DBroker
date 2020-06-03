@@ -1,5 +1,6 @@
 package nz.co.seclib.dbroker.ui.stockinfo
 
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -12,8 +13,13 @@ import android.view.MotionEvent
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager.widget.ViewPager
+import com.google.android.material.tabs.TabLayout
 import com.wordplat.easydivider.RecyclerViewCornerRadius
 import com.wordplat.easydivider.RecyclerViewLinearDivider
 import com.wordplat.ikvstockchart.KLineHandler
@@ -50,6 +56,10 @@ class NZXTradeLogActivity : AppCompatActivity() , CoroutineScope by MainScope(){
         val adapter = TradeLogListAdapter(this)
 
         stockCode = intent.getStringExtra("STOCKCODE") ?:"KMD"
+
+        val tradeLogPagerAdapter = TradeLogPagerAdapter(this,supportFragmentManager)
+        vpTradeInfo.adapter = tradeLogPagerAdapter
+        tlTradeInfo.setupWithViewPager(vpTradeInfo)
 
         rvTradeLog.adapter = adapter
         rvTradeLog.layoutManager = LinearLayoutManager(this)
@@ -250,5 +260,28 @@ class NZXTradeLogActivity : AppCompatActivity() , CoroutineScope by MainScope(){
             }
         }
         return true
+    }
+
+
+    private inner class TradeLogPagerAdapter(private val context: Context, fm: FragmentManager) : FragmentStatePagerAdapter(fm) {
+        private val listOfTitles = arrayOf(R.string.trade_log_snapshot,R.string.trade_log_activity,R.string.trade_log_performance, R.string.trade_log_fundamental)
+
+        override fun getItem(position: Int): Fragment {
+            when(position){
+                0 -> return TradeLogSnapShotFragment.newInstance()
+                1 -> return TradeLogActivityFragment.newInstance()
+                2 -> return TradeLogPerformanceFragment.newInstance()
+                3 -> return TradeLogFundamentalFragment.newInstance()
+            }
+            return TradeLogActivityFragment.newInstance()
+        }
+
+        override fun getPageTitle(position: Int): CharSequence? {
+            return context.resources.getString(listOfTitles[position])
+        }
+
+        override fun getCount(): Int {
+            return listOfTitles.size
+        }
     }
 }

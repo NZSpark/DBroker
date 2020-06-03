@@ -26,3 +26,39 @@ class NZXIntraDayInfo{
     var volume = 0
     var time : String = ""
 }
+
+class NZXStockInfo {
+    var infoTime = ""
+
+    var snapShot = ""
+    var snapShotStockCode = ""
+    var snapShotCurrentPrice = ""
+    var snapShotChangeValue = ""
+    var snapShotChangePercent = ""
+    var snapShotInstrumentName = ""
+    var snapShotIssuedBy = ""
+    var snapShotISIN = ""
+    var snapShotType = ""
+
+    var activity = ""
+    var activityTradingStatus = ""
+    var activityTrades = ""
+    var activityValue = ""
+    var activityVolume = ""
+    var activityCapitalisation = ""
+
+    var performance = ""
+    var performanceOpen = ""
+    var performanceHigh = ""
+    var performanceLow = ""
+    var performanceHighBid = ""
+    var performanceLowOffer = ""
+
+    var fundamental = ""
+    var fundamentalPE = ""
+    var fundamentalEPS = ""
+    var fundamentalNTA = ""
+    var fundamentalGrossDivYield = ""
+    var fundamentalSecuritiesIssued = ""
+
+}

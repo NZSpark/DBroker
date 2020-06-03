@@ -34,6 +34,10 @@
     <string name="user_info_account_withdraw">Withdraw Amount: </string>
     <string name="user_info_trade_records">Trade\nRecords</string>
 
+    <string name="trade_log_snapshot">SnapShot</string>
+    <string name="trade_log_activity">Activity</string>
+    <string name="trade_log_performance">Performance</string>
+    <string name="trade_log_fundamental">Fundamental</string>
 
     <string name="system_info_enable">Enable</string>
     <string name="system_info_disable">Disable</string>
@@ -59,8 +63,7 @@
     <string name="market_start_time">09:30</string>
     <string name="market_end_time">17:15</string>
 
-    
-    
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -6,10 +6,7 @@ import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import nz.co.seclib.dbroker.data.repository.NZXRepository
-import nz.co.seclib.dbroker.data.webdata.AsksRow
-import nz.co.seclib.dbroker.data.webdata.BidsRow
-import nz.co.seclib.dbroker.data.webdata.NZXWeb
-import nz.co.seclib.dbroker.data.webdata.TradesRow
+import nz.co.seclib.dbroker.data.webdata.*
 import org.jsoup.Jsoup
 import java.lang.reflect.Type
 import java.sql.Date
@@ -291,7 +288,7 @@ class StockCurrentTradeInfo{
             val sTemp = (stockInfo.price.replace(",", "").toFloat() * 100).toString()
             if(sTemp.indexOf(".") > 0) {
                 this.price = sTemp.substring(0, sTemp.indexOf("."))
-                if(sTemp.toFloat() - this.price.toFloat() > 0f )
+                if(sTemp.toFloat() - this.price.toFloat() > 0.001f )
                     if( sTemp.indexOf(".") + 3 > sTemp.length )
                         this.price = sTemp
                     else
@@ -310,6 +307,79 @@ class StockCurrentTradeInfo{
             this.value = stockInfo.value.substring(0,stockInfo.value.indexOf("."))
         else
             this.value = stockInfo.value
+
+        this.infoTime = stockInfo.infoTime
+    }
+
+    fun copyFromNZXStockInfo(stockInfo: NZXStockInfo){
+        this.stockCode = stockInfo.snapShotStockCode
+        this.companyName = stockInfo.snapShotInstrumentName
+
+        stockInfo.snapShotCurrentPrice = stockInfo.snapShotCurrentPrice.replace("$","")
+        if(stockInfo.snapShotCurrentPrice.indexOf(".") > 0 && stockInfo.snapShotCurrentPrice.length > 0) {
+            val sTemp = (stockInfo.snapShotCurrentPrice.replace(",", "").toFloat() * 100).toString()
+            if(sTemp.indexOf(".") > 0) {
+                this.price = sTemp.substring(0, sTemp.indexOf("."))
+                if(sTemp.toFloat() - this.price.toFloat() > 0.001f )
+                    if( sTemp.indexOf(".") + 3 > sTemp.length )
+                        this.price = sTemp
+                    else
+                        this.price = sTemp.substring(0, sTemp.indexOf(".")+3)
+            }
+            else
+                this.price = sTemp
+        }
+        else
+            this.price = stockInfo.snapShotCurrentPrice
+
+
+        this.change = stockInfo.snapShotChangePercent
+        this.sBuy = stockInfo.performanceHighBid
+        this.sSell = stockInfo.performanceLowOffer
+
+        stockInfo.performanceHigh = stockInfo.performanceHigh.replace("$","")
+        if(stockInfo.performanceHigh.indexOf(".") > 0 && stockInfo.performanceHigh.length > 0) {
+            val sTemp = (stockInfo.performanceHigh.replace(",", "").toFloat() * 100).toString()
+            if(sTemp.indexOf(".") > 0) {
+                this.sHigh = sTemp.substring(0, sTemp.indexOf("."))
+                if(sTemp.toFloat() - this.sHigh.toFloat() > 0.001f )
+                    if( sTemp.indexOf(".") + 3 > sTemp.length )
+                        this.sHigh = sTemp
+                    else
+                        this.sHigh = sTemp.substring(0, sTemp.indexOf(".")+3)
+            }
+            else
+                this.sHigh = sTemp
+        }
+        else
+            this.sHigh = stockInfo.performanceHigh
+
+        stockInfo.performanceLow = stockInfo.performanceLow.replace("$","")
+        if(stockInfo.performanceLow.indexOf(".") > 0 && stockInfo.performanceLow.length > 0) {
+            val sTemp = (stockInfo.performanceLow.replace(",", "").toFloat() * 100).toString()
+            if(sTemp.indexOf(".") > 0) {
+                this.sLow = sTemp.substring(0, sTemp.indexOf("."))
+                if(sTemp.toFloat() - this.sLow.toFloat() > 0.001f )
+                    if( sTemp.indexOf(".") + 3 > sTemp.length )
+                        this.sLow = sTemp
+                    else
+                        this.sLow = sTemp.substring(0, sTemp.indexOf(".")+3)
+            }
+            else
+                this.sLow = sTemp
+        }
+        else
+            this.sLow = stockInfo.performanceLow
+
+
+        this.sFirst = stockInfo.performanceOpen
+        this.volume = stockInfo.activityVolume
+
+        if(stockInfo.activityValue.indexOf(".") > 0  )
+            this.value = stockInfo.activityValue.substring(0,stockInfo.activityValue.indexOf("."))
+        else
+            this.value = stockInfo.activityValue
+        this.value = this.value.replace("$","")
 
         this.infoTime = stockInfo.infoTime
     }

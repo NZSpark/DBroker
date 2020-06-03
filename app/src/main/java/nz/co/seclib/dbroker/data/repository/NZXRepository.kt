@@ -9,6 +9,7 @@ import com.wordplat.ikvstockchart.entry.EntrySet
 import nz.co.seclib.dbroker.data.database.*
 import nz.co.seclib.dbroker.data.webdata.NZXWeb
 import nz.co.seclib.dbroker.data.webdata.NZXIntraDayInfo
+import nz.co.seclib.dbroker.data.webdata.NZXStockInfo
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -17,10 +18,7 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
 
     var stockInfoList = listOf<StockInfo>()
 
-    fun getStockInfo(): List<StockInfo> {
-        stockInfoList =  nzxWeb.getStockInfo()
-        return stockInfoList
-    }
+
 
     fun getCurrentTradeInfoByStockCode(stockCode: String): StockCurrentTradeInfo?
     {
@@ -29,13 +27,14 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
         //should be done only once.
         //stockInfoList = getStockInfo()
 
-        stockInfoList.forEach {stockInfo ->
-            if(stockInfo.stockCode == stockCode) {
-                stockCurrentTradeInfo.copyFromStokInfo(stockInfo)
-                return@forEach
-            }
-        }
+//        stockInfoList.forEach {stockInfo ->
+//            if(stockInfo.stockCode == stockCode) {
+//                stockCurrentTradeInfo.copyFromStokInfo(stockInfo)
+//                return@forEach
+//            }
+//        }
 
+        stockCurrentTradeInfo.copyFromNZXStockInfo(getStockInfo(stockCode))
         return stockCurrentTradeInfo
     }
 
@@ -425,6 +424,17 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
         }
 
         return tradeLogList.reversed()
+    }
+
+    //get one stock info
+    fun getStockInfo(stockCode:String):NZXStockInfo {
+        return nzxWeb.extractStockInfoFromWebPage(stockCode)
+    }
+
+    //get all stocks info
+    fun getStockInfo(): List<StockInfo> {
+        stockInfoList =  nzxWeb.getStockInfo()
+        return stockInfoList
     }
 
 }

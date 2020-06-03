@@ -11,6 +11,7 @@ import com.wordplat.ikvstockchart.entry.*
 import nz.co.seclib.dbroker.data.database.TradeLog
 import nz.co.seclib.dbroker.data.repository.NZXRepository
 import nz.co.seclib.dbroker.data.model.*
+import nz.co.seclib.dbroker.data.webdata.NZXStockInfo
 
 @RequiresApi(Build.VERSION_CODES.O)
 class NZXTradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel(){
@@ -22,6 +23,9 @@ class NZXTradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel
 
     private val _companyAnalysis = MutableLiveData<String>()
     val companyAnalysis : LiveData<String> = _companyAnalysis
+
+    private val _stockInfo = MutableLiveData<NZXStockInfo>()
+    val stockInfo : LiveData<NZXStockInfo> = _stockInfo
 
     //for TradeLogActivity ----end
 
@@ -47,6 +51,8 @@ class NZXTradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel
 
             //initial for TradeLogActivity
             initTradeLogActivity(stockCode)
+
+            _stockInfo.postValue(nzxRepository.getStockInfo(stockCode))
 
             //only to start timer during the market trading time.
             if (bTimerEnable && bTimerIdle && checkMarketTradingTime()) {
@@ -117,7 +123,7 @@ class NZXTradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel
         //_entrySet.postValue(nzxRepository.getIntraDayEntrySetByStockCode(stockCode))
         //_entrySet.postValue(nzxRepository.getTodayIntraEntrySet(stockCode))
         //_entrySet.postValue(nzxRepository.expandEntrySet( nzxRepository.convertTradeLogListToEntrySetByInterval(todayTradeList,1,"TimeLine")))
-
+        _stockInfo.postValue(nzxRepository.getStockInfo(stockCode))
     }
 
 }
