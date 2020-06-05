@@ -184,6 +184,13 @@ public class EntrySet {
                 maxYIndex = i;
             }
         }
+
+        //new minY and maxY are used in DBroker, set entry.start in the middle of chart.
+        if(preClose != 0) {
+            float fDelta = Math.max(preClose - minY, maxY - preClose);
+            minY = preClose - fDelta;
+            maxY = preClose + fDelta;
+        }
     }
 
     /**

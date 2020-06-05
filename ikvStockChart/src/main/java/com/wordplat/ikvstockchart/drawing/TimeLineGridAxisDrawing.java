@@ -125,7 +125,7 @@ public class TimeLineGridAxisDrawing implements IDrawing {
                 xLabelPaint.setTextAlign(Paint.Align.RIGHT);
             }
 
-            // 绘制 X 轴 label
+            // 绘制 X 轴 label ,  默认使用entrySet数组元素xLabel的前5个值。
             if (entrySetSize > 4) {
                 canvas.drawText(
                         entrySet.getEntryList().get(i).getXLabel(),

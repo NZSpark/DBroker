@@ -437,4 +437,12 @@ class NZXRepository(private val dbDao: DBrokerDAO, private val nzxWeb: NZXWeb) {
         return stockInfoList
     }
 
+    fun generateStockCodeList(): List<String> {
+        val stockCodeList = mutableListOf<String>()
+        stockInfoList.forEach {stockInfo ->
+            stockCodeList.add(stockInfo.stockCode)
+        }
+        return stockCodeList
+    }
+
 }

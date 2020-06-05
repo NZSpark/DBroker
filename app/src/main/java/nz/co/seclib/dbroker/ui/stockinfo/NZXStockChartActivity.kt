@@ -7,6 +7,8 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
@@ -25,6 +27,7 @@ import nz.co.seclib.dbroker.viewmodel.NZXStockInfoViewModelFactory
 //import org.xutils.view.annotation.ContentView
 //import org.xutils.view.annotation.ViewInject
 import java.util.*
+import androidx.lifecycle.Observer
 
 /**
  *
@@ -56,6 +59,8 @@ class NZXStockChartActivity : AppCompatActivity() {
     private var entrySet: EntrySet? = null
     private var loadStartPos = 5500
     private var loadEndPos = 6000
+    var stockCode = ""
+    var stockCodeList = emptyList<String>()
 
     //    private int loadStartPos = 500;
     //    private int loadEndPos = 600;
@@ -66,8 +71,9 @@ class NZXStockChartActivity : AppCompatActivity() {
         kLineLayout = findViewById<InteractiveKLineLayout>(R.id.klTrade)
         
         //pass stockCode and show it on title bar.
-        val stockCode = this.intent.getStringExtra("STOCKCODE")
-        supportActionBar!!.setTitle("Candle Chart : $stockCode")
+        stockCode = this.intent.getStringExtra("STOCKCODE")
+        supportActionBar!!.setTitle("Chart : $stockCode")
+
         initUI()
         loadKLineData(stockCode)
 
@@ -75,6 +81,10 @@ class NZXStockChartActivity : AppCompatActivity() {
             this.application
         ).create(NZXStockInfoViewModel::class.java)
         nzxStockViewModel.initWithStockCode(stockCode) //initial timer.
+
+        nzxStockViewModel.stockCodeList.observe(this, Observer{
+            stockCodeList = it
+        })
 
         ivChartAdd.setOnClickListener{
             nzxStockViewModel.insertUserStock(stockCode)
@@ -402,6 +412,32 @@ class NZXStockChartActivity : AppCompatActivity() {
         }
         loadStartPos -= insertCount
         return entries
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_chart_direction, menu)
+        return true
+    }
+    override fun onOptionsItemSelected( item: MenuItem) :Boolean {
+        when (item.itemId) {
+            R.id.menu_chart_previous -> {
+                var i = stockCodeList.indexOf(stockCode)
+                i++
+                if(i == stockCodeList.size) i = 0
+                stockCode = stockCodeList[i]
+            }
+
+            R.id.menu_chart_next -> {
+                var i = stockCodeList.indexOf(stockCode)
+                i--
+                if(i == -1) i = stockCodeList.size - 1
+                stockCode = stockCodeList[i]
+            }
+
+        }
+        supportActionBar!!.setTitle("Chart : $stockCode")
+        loadKLineData(stockCode)
+        return true
     }
 
     companion object {

@@ -11,10 +11,9 @@
 
     <TextView
         android:id="@+id/tvSelectedListStockCode"
-        android:layout_width="40dp"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
-        android:paddingRight="5dp"
         android:textAlignment="viewEnd"
         android:textSize="12sp" />
 
@@ -23,17 +22,15 @@
         android:id="@+id/tvTradePercent"
         android:layout_width="55dp"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
+        android:paddingLeft="2dp"
         android:textAlignment="viewEnd"
         android:textSize="12sp" />
 
     <TextView
         android:id="@+id/tvTradePrice"
-        android:layout_width="45dp"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
+        android:paddingLeft="2dp"
         android:textAlignment="viewEnd"
         android:textSize="12sp" />
 
@@ -41,8 +38,7 @@
         android:id="@+id/tvTradeHigh"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
+        android:paddingLeft="2dp"
         android:textAlignment="viewEnd"
         android:textSize="12sp" />
 
@@ -50,8 +46,7 @@
         android:id="@+id/tvTradeLow"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
+        android:paddingLeft="2dp"
         android:textAlignment="viewEnd"
         android:textSize="12sp" />
 
@@ -59,8 +54,7 @@
         android:id="@+id/tvTradeValue"
         android:layout_width="80dp"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
+        android:paddingLeft="2dp"
         android:textAlignment="viewEnd"
         android:textSize="12sp" />
 
@@ -69,8 +63,7 @@
         android:layout_width="70dp"
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
-        android:paddingRight="5dp"
-        android:textAlignment="viewEnd"
+        android:textAlignment="viewStart"
         android:textSize="12sp" />
 
 </TableRow>

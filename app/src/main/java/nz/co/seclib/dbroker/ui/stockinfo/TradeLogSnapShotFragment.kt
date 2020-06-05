@@ -1,10 +1,12 @@
 package nz.co.seclib.dbroker.ui.stockinfo
 
+import android.opengl.Visibility
 import android.os.Bundle
 import android.text.Html
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import kotlinx.android.synthetic.main.fragment_trade_log_activity.*
@@ -43,8 +45,8 @@ class TradeLogSnapShotFragment : Fragment() {
             tvSnapShotInstrumentName.text = it.snapShotInstrumentName
             tvSnapShotIssuedBy.text = it.snapShotIssuedBy
             tvSnapShotISIN.text = it.snapShotISIN
-            tvSnapShotType.text = it.snapShotType
-
+            //this item seems useless.
+            //tvSnapShotType.text = it.snapShotType
             //tvTradeLogSnapShot.text = Html.fromHtml(it.snapShot,Html.FROM_HTML_MODE_COMPACT)
         })
 

@@ -19,12 +19,16 @@
     <string name="refresh_button">Refresh</string>
     <string name="image_description">Stock Trends</string>
     <string name="timer_interval">300000</string>
+
     <string name="menu_selected_stocks">Selected Stocks</string>
     <string name="menu_stocks_info">Stocks Info"</string>
     <string name="menu_stock_search">Search Stocks"</string>
     <string name="menu_stock_trade_info">Stocks Trade Info"</string>
     <string name="menu_system_parameters">System Parameters"</string>
     <string name="menu_display_mode">NightMode"</string>
+    <string name="menu_chart_previous">Previous</string>
+    <string name="menu_chart_next">Next</string>
+
     <string name="market_open_time">09:45</string>
     <string name="market_close_time">17:15</string>
 

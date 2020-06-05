@@ -99,11 +99,15 @@ class NZXTradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel
 
     fun initTradeLogActivity(stockCode: String) = viewModelScope.launch(Dispatchers.IO) {
         var todayTradeList = nzxRepository.getTodayTradeLog(stockCode).reversed()
+        val stockInfo = nzxRepository.getStockInfo(stockCode)
+        _stockInfo.postValue(stockInfo)
 
         //val todayTradeList = nzxRepository.getTradeLogByTime("2020-05-15 ","2020-05-15+",stockCode).reversed()
         if( todayTradeList.size < 1) {
             todayTradeList = nzxRepository.getTodayTradeLogFromNZX(stockCode)
-            _entrySet.postValue(nzxRepository.getTodayIntraEntrySet(stockCode))
+            val entrySet = nzxRepository.getTodayIntraEntrySet(stockCode)
+            entrySet.preClose = stockInfo.performanceOpen.replace("$","").toFloat()
+            _entrySet.postValue(entrySet)
         }
         else {
             _entrySet.postValue(
@@ -123,7 +127,7 @@ class NZXTradeLogViewModel(private val nzxRepository: NZXRepository) : ViewModel
         //_entrySet.postValue(nzxRepository.getIntraDayEntrySetByStockCode(stockCode))
         //_entrySet.postValue(nzxRepository.getTodayIntraEntrySet(stockCode))
         //_entrySet.postValue(nzxRepository.expandEntrySet( nzxRepository.convertTradeLogListToEntrySetByInterval(todayTradeList,1,"TimeLine")))
-        _stockInfo.postValue(nzxRepository.getStockInfo(stockCode))
+
     }
 
 }

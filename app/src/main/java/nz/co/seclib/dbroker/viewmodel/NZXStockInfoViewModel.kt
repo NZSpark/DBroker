@@ -51,6 +51,10 @@ class NZXStockInfoViewModel(private val nzxRepository: NZXRepository) : ViewMode
 
     private val viewModelJob = SupervisorJob()
 
+    //store the newest list of stockCode
+    private val _stockCodeList = MutableLiveData<List<String>>()
+    val stockCodeList = _stockCodeList
+
     //get parameters from database. (UserName, Password, TimerInterval, TimerEnable)
     fun initWithStockCode(inStockCode: String){
         if(inStockCode == "")
@@ -130,7 +134,7 @@ class NZXStockInfoViewModel(private val nzxRepository: NZXRepository) : ViewMode
             if(stockCodeList.size == 0){
                 stockCodeList =listOf<String>("KMD","AIR")
             }
-            nzxRepository.getStockInfo()  //update latest prices.
+
             stockCodeList.forEach { newStockCode ->
                 val currentTradeInfo = nzxRepository.getCurrentTradeInfoByStockCode(newStockCode)?:return@forEach
                 stockCurrentTradeInfoList.add(currentTradeInfo)
@@ -190,7 +194,14 @@ class NZXStockInfoViewModel(private val nzxRepository: NZXRepository) : ViewMode
 
         _stockCurrentTradeInfoList.postValue(mutableListOf<StockCurrentTradeInfo>())
 
+        nzxRepository.getStockInfo()  //update latest prices.
+
         selectedStockCodeList =  nzxRepository.selectStockCodeByUserID(userName)
+
+        _stockCodeList.postValue(generateStockCodeList())
     }
 
+    fun generateStockCodeList(): List<String>{
+        return nzxRepository.generateStockCodeList()
+    }
 }
